@@ -14,6 +14,7 @@ import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
 import { useMeshState } from '../hooks/useMeshState';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 import { mockLogs } from '../utils/mockData';
 import type { Transaction } from '../types';
 import { TransactionDetailsModal } from '../components/ledger/TransactionDetailsModal';
@@ -50,10 +51,29 @@ interface MetricDef {
   key: string;
   label: string;
   value: string | number;
+  numericValue?: number;
+  valueType?: 'integer' | 'currency' | 'percent';
   subtext: string;
   subtextColor: string;
   delay: number;
 }
+
+const AnimatedMetricValue: React.FC<{
+  value: number;
+  type?: 'integer' | 'currency' | 'percent';
+}> = ({ value, type = 'integer' }) => {
+  const count = useAnimatedCounter(value);
+
+  switch (type) {
+    case 'currency':
+      return <>₹{count.toFixed(2)}</>;
+    case 'percent':
+      return <>{count.toFixed(1)}%</>;
+    case 'integer':
+    default:
+      return <>{Math.round(count)}</>;
+  }
+};
 
 const MetricCard: React.FC<{
   metric: MetricDef;
@@ -78,7 +98,13 @@ const MetricCard: React.FC<{
         </div>
       </div>
       <div className="mt-4">
-        <span className="text-2xl font-extrabold font-mono text-[var(--text-primary)] tracking-tight">{metric.value}</span>
+        {metric.numericValue !== undefined ? (
+          <span className="text-2xl font-extrabold font-mono text-[var(--text-primary)] tracking-tight">
+            <AnimatedMetricValue value={metric.numericValue} type={metric.valueType} />
+          </span>
+        ) : (
+          <span className="text-2xl font-extrabold font-mono text-[var(--text-primary)] tracking-tight">{metric.value}</span>
+        )}
         <span className={`block text-[11px] font-semibold mt-1.5 ${metric.subtextColor}`}>
           {metric.subtext}
         </span>
@@ -164,6 +190,8 @@ export const Overview: React.FC = () => {
       key: 'totalTransactions',
       label: 'Total Transactions',
       value: txsLoaded ? analytics.totalTransactions : '---',
+      numericValue: txsLoaded ? analytics.totalTransactions : undefined,
+      valueType: 'integer',
       subtext: txsLoaded ? `${analytics.successfulPayments} settled, ${analytics.failedPayments} rejected` : 'Awaiting data...',
       subtextColor: txsLoaded ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]',
       delay: 0.05,
@@ -172,6 +200,8 @@ export const Overview: React.FC = () => {
       key: 'successfulPayments',
       label: 'Successful Payments',
       value: txsLoaded ? analytics.successfulPayments : '---',
+      numericValue: txsLoaded ? analytics.successfulPayments : undefined,
+      valueType: 'integer',
       subtext: txsLoaded ? `${((analytics.successfulPayments / Math.max(analytics.totalTransactions, 1)) * 100).toFixed(1)}% settlement rate` : 'Awaiting data...',
       subtextColor: txsLoaded ? 'text-emerald-400 font-semibold' : 'text-[var(--text-muted)]',
       delay: 0.1,
@@ -180,6 +210,8 @@ export const Overview: React.FC = () => {
       key: 'failedPayments',
       label: 'Failed Payments',
       value: txsLoaded ? analytics.failedPayments : '---',
+      numericValue: txsLoaded ? analytics.failedPayments : undefined,
+      valueType: 'integer',
       subtext: txsLoaded ? `${((analytics.failedPayments / Math.max(analytics.totalTransactions, 1)) * 100).toFixed(1)}% rejection rate` : 'Awaiting data...',
       subtextColor: txsLoaded ? 'text-rose-400 font-semibold' : 'text-[var(--text-muted)]',
       delay: 0.15,
@@ -188,6 +220,8 @@ export const Overview: React.FC = () => {
       key: 'averageAmount',
       label: 'Average Amount',
       value: txsLoaded ? `₹${analytics.averageAmount.toFixed(2)}` : '---',
+      numericValue: txsLoaded ? analytics.averageAmount : undefined,
+      valueType: 'currency',
       subtext: txsLoaded ? `Across ${analytics.totalTransactions} transaction(s)` : 'Awaiting data...',
       subtextColor: txsLoaded ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]',
       delay: 0.2,
@@ -196,6 +230,8 @@ export const Overview: React.FC = () => {
       key: 'totalMeshNodes',
       label: 'Total Mesh Nodes',
       value: meshLoaded ? analytics.totalMeshNodes : '---',
+      numericValue: meshLoaded ? analytics.totalMeshNodes : undefined,
+      valueType: 'integer',
       subtext: meshLoaded ? `Idempotency cache: ${meshState.idempotencyCacheSize}` : 'Awaiting data...',
       subtextColor: meshLoaded ? 'text-[var(--text-muted)]' : 'text-[var(--text-muted)]',
       delay: 0.25,
@@ -204,6 +240,8 @@ export const Overview: React.FC = () => {
       key: 'activeNodes',
       label: 'Active Nodes',
       value: meshLoaded ? analytics.activeNodes : '---',
+      numericValue: meshLoaded ? analytics.activeNodes : undefined,
+      valueType: 'integer',
       subtext: meshLoaded ? `${analytics.totalMeshNodes - analytics.activeNodes} node(s) offline` : 'Awaiting data...',
       subtextColor: meshLoaded ? (analytics.activeNodes > 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold') : 'text-[var(--text-muted)]',
       delay: 0.3,
@@ -212,6 +250,8 @@ export const Overview: React.FC = () => {
       key: 'networkHealth',
       label: 'Network Health',
       value: meshLoaded ? formatPercent(analytics.networkHealth) : '---',
+      numericValue: meshLoaded ? analytics.networkHealth : undefined,
+      valueType: 'percent',
       subtext: meshLoaded ? `${analytics.activeNodes} / ${analytics.totalMeshNodes} nodes connected` : 'Awaiting data...',
       subtextColor: meshLoaded ? `${percentColor(analytics.networkHealth)} font-semibold` : 'text-[var(--text-muted)]',
       delay: 0.35,
@@ -220,6 +260,8 @@ export const Overview: React.FC = () => {
       key: 'packetSuccessRate',
       label: 'Packet Success Rate',
       value: txsLoaded ? formatPercent(analytics.packetSuccessRate) : '---',
+      numericValue: txsLoaded ? analytics.packetSuccessRate : undefined,
+      valueType: 'percent',
       subtext: txsLoaded ? `${analytics.successfulPayments} / ${analytics.totalTransactions} packets delivered` : 'Awaiting data...',
       subtextColor: txsLoaded ? `${percentColor(analytics.packetSuccessRate)} font-semibold` : 'text-[var(--text-muted)]',
       delay: 0.4,
