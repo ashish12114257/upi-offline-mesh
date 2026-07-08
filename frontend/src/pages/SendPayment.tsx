@@ -758,5 +758,4 @@ export const SendPayment: React.FC = () => {
     </div>
   );
 };
-
 export default SendPayment;

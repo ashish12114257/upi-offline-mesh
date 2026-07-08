@@ -12,7 +12,7 @@
     </parent>
 
     <groupId>com.demo</groupId>
-    <artifactId>upi-offline-mesh</artifactId>
+    <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>upi-offline-mesh</name>
     <description>Offline UPI via Bluetooth Mesh - Demo Backend</description>
