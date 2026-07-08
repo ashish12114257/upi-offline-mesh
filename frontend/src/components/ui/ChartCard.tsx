@@ -25,11 +25,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     whileInView="visible"
     viewport={{ once: true }}
     transition={{ duration: 0.4, delay }}
-    whileHover={{ y: -2, transition: { duration: 0.25 } }}
-    className={`rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 backdrop-blur-md card-hover ${className}`}
+    className={`rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 backdrop-blur-md ${className}`}
   >
     <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">
-      <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+      <h2 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
         {icon} {title}
       </h2>
       {badge && (

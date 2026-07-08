@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Menu, ShieldCheck, Key, Copy, Check, ExternalLink, RefreshCw, AlertTriangle, Moon, Sun } from 'lucide-react';
+import { Menu, Key, Copy, Check, ExternalLink, RefreshCw, AlertTriangle, Moon, Sun } from 'lucide-react';
 import { meshApi } from '../../services/meshApi';
 import { useTheme } from '../../context/ThemeContext';
+import { NetworkStatus } from '../ui/NetworkStatus';
 import toast from 'react-hot-toast';
 
 interface NavbarProps {
@@ -67,33 +68,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   }, [pubKey, keyLoading, keyError]);
 
   return (
-    <header className="flex h-16 w-full items-center justify-between border-b border-[var(--border)] bg-[var(--navbar-bg)] backdrop-blur-xl px-4 lg:px-6 sticky top-0 z-30 transition-[background-color,border-color] duration-250">
-      <div className="flex items-center gap-3">
+    <header className="flex h-14 w-full items-center justify-between border-b border-[var(--border)] bg-[var(--navbar-bg)] px-4 lg:px-6 sticky top-0 z-30 backdrop-blur-sm">
+      <div className="flex items-center gap-2">
         <button
           onClick={onToggleSidebar}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] lg:hidden cursor-pointer transition-all duration-200"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] lg:hidden transition-colors duration-150"
           aria-label="Toggle sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-900/30 bg-emerald-950/20 px-3.5 py-1 text-[11px] font-semibold text-emerald-400 dark:bg-emerald-950/20">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-          </span>
-          <span className="flex items-center gap-1">
-            Gateway: Connected
-            <ShieldCheck className="h-3 w-3 text-emerald-400" />
-          </span>
+        <div className="hidden sm:flex items-center gap-1.5 rounded-md bg-[var(--bg-subtle)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-secondary)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
+          <span>Gateway: Connected</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 lg:gap-3">
+      <div className="flex items-center gap-1.5">
+        <NetworkStatus />
+
         <button
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 cursor-pointer"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors duration-150"
         >
           {theme === 'dark' ? (
             <Sun className="h-4 w-4" />
@@ -102,39 +99,33 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           )}
         </button>
 
-        <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-2.5 lg:px-3 py-1.5 font-mono text-xs transition-[background-color,border-color] duration-250">
-          <Key className="h-3.5 w-3.5 text-violet-400 shrink-0" />
-          <span className="text-[var(--text-muted)] hidden lg:inline whitespace-nowrap">Server RSA Key:</span>
+        <div className="hidden sm:flex items-center gap-2 rounded-md bg-[var(--bg-subtle)] px-2.5 py-1.5 font-mono text-xs">
+          <Key className="h-3 w-3 text-[var(--accent)] shrink-0" />
 
           {keyLoading ? (
-            <span className="flex items-center gap-1.5">
-              <span className="h-3 w-24 rounded bg-[var(--skeleton-from)] animate-shimmer bg-[length:200%_100%]" />
-            </span>
+            <span className="h-3 w-20 rounded bg-[var(--skeleton-from)] animate-shimmer bg-[length:200%_100%]" />
           ) : keyError ? (
-            <span className="flex items-center gap-1.5 text-rose-400">
+            <span className="flex items-center gap-1 text-[var(--danger)]">
               <AlertTriangle className="h-3 w-3" />
-              <span className="text-[11px]">Unavailable</span>
-              <button
-                onClick={fetchKey}
-                className="ml-1 flex h-5 w-5 items-center justify-center rounded bg-[var(--bg-subtle)] hover:bg-[var(--skeleton-via)] transition-colors"
-                aria-label="Retry fetching server key"
-              >
+              <span className="text-[11px]">Key unavailable</span>
+              <button onClick={fetchKey} className="hover:text-[var(--text-primary)] transition-colors" aria-label="Retry">
                 <RefreshCw className="h-3 w-3" />
               </button>
             </span>
           ) : (
-            <span className="text-[var(--text-primary)] select-all text-[11px] truncate max-w-[120px] lg:max-w-none">
-              {truncatedKey}
-            </span>
+            <>
+              <span className="text-[var(--text-muted)] hidden lg:inline text-[10px] mr-0.5">RSA:</span>
+              <span className="text-[var(--text-primary)] select-all text-[11px]">{truncatedKey}</span>
+            </>
           )}
 
           {pubKey && (
             <button
               onClick={handleCopyKey}
               aria-label="Copy RSA public key to clipboard"
-              className="ml-0.5 flex h-6 w-6 items-center justify-center rounded bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors duration-200 cursor-pointer shrink-0"
+              className="flex h-5 w-5 items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors duration-150"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="h-3 w-3 text-[var(--success)]" /> : <Copy className="h-3 w-3" />}
             </button>
           )}
         </div>
@@ -144,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="H2 Database Console (opens in new tab)"
-          className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors duration-200 cursor-pointer"
+          className="hidden lg:flex items-center gap-1 rounded-md bg-[var(--bg-subtle)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors duration-150"
         >
           <span>H2 Console</span>
           <ExternalLink className="h-3 w-3" />

@@ -4,6 +4,7 @@ import com.demo.upimesh.crypto.HybridCryptoService;
 import com.demo.upimesh.model.MeshPacket;
 import com.demo.upimesh.model.PaymentInstruction;
 import com.demo.upimesh.model.Transaction;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +75,19 @@ public class BridgeIngestionService {
         }
     }
 
-    public record IngestResult(String outcome, String packetHash, String reason, Long transactionId) {
+    @Schema(name = "IngestResult", description = "Result of ingesting a mesh packet into the server")
+    public record IngestResult(
+            @Schema(description = "Outcome of the ingestion", allowableValues = {"SETTLED", "DUPLICATE_DROPPED", "INVALID"}, example = "SETTLED")
+            String outcome,
+
+            @Schema(description = "SHA-256 hex hash of the packet ciphertext (used as idempotency key)", example = "abcdef0123456789...")
+            String packetHash,
+
+            @Schema(description = "Failure reason (null on success)", example = "decryption_failed", nullable = true)
+            String reason,
+
+            @Schema(description = "Transaction ID assigned on settlement (null if not settled)", example = "1", nullable = true)
+            Long transactionId) {
         public static IngestResult settled(String hash, Transaction tx) {
             return new IngestResult("SETTLED", hash, null, tx.getId());
         }

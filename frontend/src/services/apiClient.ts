@@ -34,30 +34,40 @@ function normalizeError(error: unknown): ApiError {
 
     if (!error.response) {
       return new ApiError(
-        'Network error. Please check your connection.',
+        'Unable to reach the server. Please check your connection and ensure the backend is running.',
         status,
-        serverMessage
+        serverMessage,
       );
     }
 
     if (error.code === 'ECONNABORTED') {
       return new ApiError(
-        'Request timed out. The server may be unreachable.',
+        'The request timed out. The server may be under heavy load or unreachable.',
         status,
-        serverMessage
+        serverMessage,
       );
     }
 
+    const friendlyMessages: Record<number, string> = {
+      400: 'The request was invalid. Please check your input and try again.',
+      404: 'The requested resource was not found. It may have been removed.',
+      409: 'A conflict occurred. This transaction may already exist.',
+      429: 'Too many requests. Please wait a moment before trying again.',
+      500: 'The server encountered an internal error. Please try again later.',
+      502: 'The gateway is temporarily unavailable. Please try again.',
+      503: 'The service is currently unavailable. Please try again later.',
+    };
+
     return new ApiError(
-      status >= 500 ? 'Server error. Please try again later.' : `Request failed (${status})`,
+      friendlyMessages[status] || `Request failed with status ${status}. Please try again.`,
       status,
-      serverMessage
+      serverMessage,
     );
   }
   if (error instanceof Error) {
     return new ApiError(error.message, 0, error.message);
   }
-  return new ApiError('An unexpected error occurred', 0, String(error));
+  return new ApiError('An unexpected error occurred. Please try again.', 0, String(error));
 }
 
 const apiClient = axios.create({
@@ -82,30 +92,28 @@ function shouldRetry(error: unknown, retryCount: number): boolean {
   return false;
 }
 
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error) => {
-    if (axios.isCancel(error)) return Promise.reject(error);
-    return Promise.reject(normalizeError(error));
-  }
-);
-
+// Single interceptor: retry first (with original axios error), then normalize
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error) => {
+    if (axios.isCancel(error)) return Promise.reject(error);
+
     const config = error.config as InternalAxiosRequestConfig & { __retryCount?: number };
-    if (!config) return Promise.reject(error);
 
-    const retryCount = config.__retryCount || 0;
-    if (!shouldRetry(error, retryCount)) return Promise.reject(error);
+    // Retry logic must happen before normalization
+    if (config) {
+      const retryCount = config.__retryCount || 0;
+      if (shouldRetry(error, retryCount)) {
+        config.__retryCount = retryCount + 1;
+        const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return apiClient(config);
+      }
+    }
 
-    config.__retryCount = retryCount + 1;
-    const delay = RETRY_BASE_DELAY * Math.pow(2, retryCount);
-
-    await new Promise(resolve => setTimeout(resolve, delay));
-
-    return apiClient(config);
-  }
+    // Normalize only after retries exhausted
+    return Promise.reject(normalizeError(error));
+  },
 );
 
 export default apiClient;

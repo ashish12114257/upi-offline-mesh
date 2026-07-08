@@ -1,5 +1,6 @@
 package com.demo.upimesh.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
@@ -17,19 +18,25 @@ import jakarta.validation.constraints.Min;
  *   server. The ciphertext is authenticated by hybrid encryption, so any
  *   tampering inside the encrypted blob is detected on decryption.
  */
+@Schema(name = "MeshPacket", description = "Over-the-wire packet format for Bluetooth mesh relay")
 public class MeshPacket {
 
     @NotBlank
-    private String packetId; // UUID, used by intermediates for gossip dedup
+    @Schema(description = "UUID used by intermediate nodes for gossip deduplication", example = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+    private String packetId;
 
     @Min(0)
-    private int ttl; // Hops remaining; intermediates decrement it
+    @Schema(description = "Hops remaining before the packet expires; intermediates decrement this", example = "5")
+    private int ttl;
 
     @NotNull
-    private Long createdAt; // epoch millis, when sender created the packet
+    @Schema(description = "Epoch milliseconds when the sender created the packet", example = "1749265800000")
+    private Long createdAt;
 
     @NotBlank
-    private String ciphertext; // base64(RSA-encrypted AES key + AES-GCM ciphertext)
+    @Schema(description = "Base64-encoded hybrid ciphertext: RSA-OAEP-wrapped AES-256-GCM session key + encrypted payload",
+            example = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...")
+    private String ciphertext;
 
     public MeshPacket() {}
 

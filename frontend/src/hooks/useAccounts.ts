@@ -38,10 +38,10 @@ export function useAccounts() {
       }
     } catch (err: unknown) {
       if (axios.isCancel(err)) return;
-      const message = err instanceof Error ? err.message : 'Failed to load accounts';
+      const message = err instanceof Error ? err.message : 'Oops! We couldn\'t load the account data.';
       setError(message);
       if (isBackground) {
-        toast.error('Unable to refresh accounts. The data shown may be outdated.');
+        toast.error('Unable to refresh account balances. The data shown may be outdated.');
       }
     } finally {
       if (!controller.signal.aborted) {

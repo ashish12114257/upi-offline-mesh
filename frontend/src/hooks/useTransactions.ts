@@ -38,7 +38,7 @@ export function useTransactions() {
       }
     } catch (err: unknown) {
       if (axios.isCancel(err)) return;
-      const message = err instanceof Error ? err.message : 'Failed to load transactions';
+      const message = err instanceof Error ? err.message : 'Oops! We couldn\'t load the transaction history.';
       setError(message);
       if (isBackground) {
         toast.error('Unable to refresh transactions. The data shown may be outdated.');

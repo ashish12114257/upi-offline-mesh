@@ -74,24 +74,23 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--bg-overlay)] backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--bg-overlay)]"
       role="dialog"
       aria-modal="true"
       aria-label="Transaction details"
       onClick={onClose}
-      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <div
         ref={modalRef}
         role="document"
-        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--border)] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-elevated)] shadow-2xl animate-scaleIn transition-[background-color,border-color] duration-250"
+        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-card)] shadow-[var(--shadow-lg)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-6 bg-[var(--bg-card-alt)]">
           <div className="flex items-center gap-2.5">
             <span className="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider">Transaction Audit</span>
-            <span className="text-[var(--border)]">•</span>
-            <span className="font-mono text-xs font-semibold text-violet-400">ID: #{transaction.id}</span>
+            <span className="text-[var(--border)]">&bull;</span>
+            <span className="font-mono text-xs font-semibold text-[var(--accent)]">ID: #{transaction.id}</span>
           </div>
           <button
             onClick={onClose}
@@ -103,11 +102,12 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
         </div>
 
         <div className="max-h-[80vh] overflow-y-auto p-6 space-y-6">
-          <div className={`flex items-center justify-between rounded-xl p-4 border animate-fadeIn ${
-            isSettled
-              ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-400'
-              : 'bg-rose-950/20 border-rose-800/40 text-rose-400'
-          }`}>
+          <div className={`flex items-center justify-between rounded-xl p-4 border ${
+              isSettled
+                ? 'bg-[var(--success-subtle)] border-[var(--success)]/30 text-[var(--success)]'
+                : 'bg-[var(--danger-subtle)] border-[var(--danger)]/30 text-[var(--danger)]'
+            }`}
+          >
             <div className="flex items-center gap-3">
               {isSettled ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
               <div>
@@ -119,12 +119,12 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
                 </span>
               </div>
             </div>
-            <span className="text-xl font-extrabold font-mono">₹{transaction.amount.toFixed(2)}</span>
+            <span className="text-lg font-semibold font-mono">₹{transaction.amount.toFixed(2)}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 card-hover">
-              <span className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest font-mono">Routing Parties</span>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4">
+              <span className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider font-mono">Routing Parties</span>
               <div className="mt-3 flex items-center justify-between text-sm">
                 <div>
                   <span className="block font-bold text-[var(--text-primary)]">{transaction.senderVpa}</span>
@@ -138,8 +138,8 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
               </div>
             </div>
 
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 card-hover">
-              <span className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest font-mono">Temporal Metadata</span>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4">
+              <span className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider font-mono">Temporal Metadata</span>
               <div className="mt-3 space-y-2.5 text-xs font-mono">
                 <div className="flex justify-between">
                   <span className="text-[var(--text-muted)] flex items-center gap-1.5"><Clock className="h-3 w-3" /> Signed:</span>
@@ -153,8 +153,8 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 space-y-3 card-hover">
-            <span className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest font-mono">Network Ingestion Audit</span>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 space-y-3">
+            <span className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider font-mono">Network Ingestion Audit</span>
             <div className="grid grid-cols-2 gap-4 text-xs font-mono">
               <div className="flex flex-col gap-1">
                 <span className="text-[var(--text-muted)] flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" /> Hop Count</span>
@@ -167,12 +167,12 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 space-y-4 card-hover">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card-alt)] p-4 space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest font-mono flex items-center gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-violet-400" /> Cryptographic Package Inspection
+              <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider font-mono flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-[var(--accent)]" /> Cryptographic Package Inspection
               </span>
-              <span className="text-[9px] bg-violet-950/40 text-violet-400 px-2.5 py-0.5 rounded border border-violet-900/30 font-mono font-semibold uppercase">
+              <span className="text-[9px] bg-[var(--accent-subtle)] text-[var(--accent)] px-2.5 py-0.5 rounded border border-[var(--accent)]/30 font-mono font-semibold uppercase">
                 RSA-OAEP + AES-GCM
               </span>
             </div>
@@ -180,21 +180,21 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
             <div className="space-y-3.5 text-xs font-mono">
               <div>
                 <span className="text-[var(--text-muted)] mb-1 flex items-center gap-1.5"><Hash className="h-3 w-3" /> Dedup Hash (SHA-256):</span>
-                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-lg border border-[var(--border)] select-all overflow-x-auto text-[11px] text-sky-400 hover:border-sky-800/50 transition-colors">
+                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-md border border-[var(--border)] select-all overflow-x-auto text-[11px] font-mono text-[var(--accent)]">
                   {transaction.packetHash}
                 </div>
               </div>
 
               <div>
                 <span className="text-[var(--text-muted)] mb-1 flex items-center gap-1.5"><Key className="h-3 w-3" /> AES-256 Session Key (RSA Encrypted):</span>
-                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-lg border border-[var(--border)] overflow-x-auto text-[11px] text-[var(--text-secondary)] select-all hover:border-[var(--skeleton-via)] transition-colors">
+                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-md border border-[var(--border)] overflow-x-auto text-[11px] font-mono text-[var(--text-secondary)] select-all">
                   {mockAesKey}
                 </div>
               </div>
 
               <div>
                 <span className="text-[var(--text-muted)] mb-1 flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Payload Ciphertext:</span>
-                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-lg border border-[var(--border)] overflow-x-auto text-[11px] text-[var(--text-secondary)] whitespace-pre-wrap select-all leading-relaxed hover:border-[var(--skeleton-via)] transition-colors">
+                <div className="bg-[var(--bg-elevated)] p-2.5 rounded-md border border-[var(--border)] overflow-x-auto text-[11px] font-mono text-[var(--text-secondary)] whitespace-pre-wrap select-all">
                   {mockCiphertext}
                 </div>
               </div>
@@ -205,7 +205,7 @@ export const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = (
         <div className="flex h-16 items-center justify-end border-t border-[var(--border)] bg-[var(--bg-card-alt)] px-6 gap-3">
           <button
             onClick={onClose}
-            className="rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-all duration-200 cursor-pointer"
+            className="rounded-md border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors duration-100"
           >
             Close
           </button>

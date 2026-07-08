@@ -1,5 +1,7 @@
 package com.demo.upimesh.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -11,42 +13,55 @@ import java.time.Instant;
  * as a defense-in-depth fallback if the Redis-style cache layer ever fails.
  */
 @Entity
-@Table(name = "transactions",
-        indexes = { @Index(name = "idx_packet_hash", columnList = "packetHash", unique = true) })
+@Table(name = "transactions")
+@Schema(name = "Transaction", description = "Permanent record of a settled payment")
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Auto-generated primary key", example = "1")
     private Long id;
 
     @Column(nullable = false, unique = true, length = 64)
-    private String packetHash; // SHA-256 hex of the encrypted packet
+    @Schema(description = "SHA-256 hex of the encrypted packet (used as idempotency key)", example = "abcdef0123456789...")
+    private String packetHash;
 
     @Column(nullable = false)
+    @Schema(description = "Sender's VPA", example = "alice@demo")
     private String senderVpa;
 
     @Column(nullable = false)
+    @Schema(description = "Receiver's VPA", example = "bob@demo")
     private String receiverVpa;
 
     @Column(nullable = false, precision = 19, scale = 2)
+    @Schema(description = "Transaction amount", example = "250.00")
     private BigDecimal amount;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     @Column(nullable = false)
-    private Instant signedAt; // When the sender originally signed it (offline)
+    @Schema(description = "Timestamp when the sender originally signed the packet (offline)", example = "2025-06-15T10:30:00Z")
+    private Instant signedAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    @Column(nullable = false)
+    @Schema(description = "Timestamp when the backend processed and settled the payment", example = "2025-06-15T10:35:00Z")
+    private Instant settledAt;
 
     @Column(nullable = false)
-    private Instant settledAt; // When the backend actually processed it
+    @Schema(description = "Identifier of the bridge node that delivered the packet", example = "phone-bridge")
+    private String bridgeNodeId;
 
     @Column(nullable = false)
-    private String bridgeNodeId; // Which mesh node finally delivered it
-
-    @Column(nullable = false)
-    private int hopCount; // How many devices it passed through
+    @Schema(description = "Number of mesh hops the packet made before reaching the bridge", example = "3")
+    private int hopCount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Schema(description = "Settlement status", example = "SETTLED")
     private Status status;
 
+    @Schema(description = "Settlement status", enumAsRef = true)
     public enum Status { SETTLED, REJECTED }
 
     public Transaction() {}

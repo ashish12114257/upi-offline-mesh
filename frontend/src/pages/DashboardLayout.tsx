@@ -1,22 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { Navbar } from '../components/navigation/Navbar';
 import { Footer } from '../components/navigation/Footer';
+import { pageTransition, smoothTransition } from '../utils/motionConfig';
+
+const COLLAPSED_KEY = 'sidebar-collapsed';
 
 export const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem(COLLAPSED_KEY) === 'true';
+  });
   const location = useLocation();
+
+  useEffect(() => {
+    localStorage.setItem(COLLAPSED_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
   const closeSidebar = () => setSidebarOpen(false);
+  const toggleCollapse = () => setSidebarCollapsed(prev => !prev);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-page)] text-[var(--text-primary)] transition-[background-color,color] duration-250">
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+    <motion.div
+      className="flex h-screen w-screen overflow-hidden bg-[var(--bg-page)] text-[var(--text-primary)]"
+      initial={false}
+      layout
+    >
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} collapsed={sidebarCollapsed} onToggleCollapse={toggleCollapse} />
 
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <motion.div
+        className="flex flex-col flex-1 min-w-0 overflow-hidden"
+        layout
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+      >
         <Navbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 overflow-y-auto px-4 lg:px-8 py-6 lg:py-8 focus:outline-none">
@@ -25,22 +44,29 @@ export const DashboardLayout: React.FC = () => {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  variants={pageTransition}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={smoothTransition}
+                  style={{ willChange: 'transform, opacity' }}
                 >
                   <Outlet />
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            <div className="mt-8 lg:mt-10 pt-4">
+            <motion.div
+              className="mt-8 lg:mt-10 pt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <Footer />
-            </div>
+            </motion.div>
           </div>
         </main>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

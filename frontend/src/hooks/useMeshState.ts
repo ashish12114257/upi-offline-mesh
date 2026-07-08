@@ -40,7 +40,7 @@ export function useMeshState() {
       }
     } catch (err: unknown) {
       if (axios.isCancel(err)) return;
-      const message = err instanceof Error ? err.message : 'Failed to load mesh state';
+      const message = err instanceof Error ? err.message : 'Oops! We couldn\'t reach the mesh network.';
       setError(message);
       if (isBackground) {
         toast.error('Unable to refresh mesh state. The data shown may be outdated.');

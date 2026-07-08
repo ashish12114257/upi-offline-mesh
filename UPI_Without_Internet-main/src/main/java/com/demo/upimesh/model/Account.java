@@ -1,5 +1,7 @@
 package com.demo.upimesh.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -10,21 +12,28 @@ import java.math.BigDecimal;
  */
 @Entity
 @Table(name = "accounts")
+@Schema(name = "Account", description = "Simulated bank account for the demo")
 public class Account {
 
     @Id
-    private String vpa; // Virtual Payment Address, e.g. "alice@demo"
+    @Schema(description = "Virtual Payment Address (unique identifier)", example = "alice@demo")
+    private String vpa;
 
     @Column(nullable = false)
+    @Schema(description = "Account holder's display name", example = "Alice")
     private String holderName;
 
     @Column(nullable = false, precision = 19, scale = 2)
+    @Schema(description = "Current account balance", example = "9750.00")
     private BigDecimal balance;
 
     @Version
+    @Schema(description = "Optimistic locking version (incremented on each update)", example = "5")
     private Long version;
 
     @Column(nullable = false)
+    @JsonIgnore
+    @Schema(description = "SHA-256 hex hash of the UPI PIN (hidden from API responses)", example = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", accessMode = Schema.AccessMode.READ_ONLY)
     private String pinHash;
 
     public Account() {}
